@@ -1,25 +1,82 @@
-import logo from './logo.svg';
 import './App.css';
+import UploadForm from './UploadForm';
+import StudentTable from './StudentTable';
+
+import React, { useState, useMemo, useEffect } from 'react';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+	const [students, setStudents] = useState([]);
+
+	const fetchData = async () => {
+		try {
+			const response = await fetch('http://localhost:8000/api/student/');
+			if (!response.ok) {
+				throw new Error('Failed to fetch data');
+			}
+			const data = await response.json();
+			setStudents(data);
+		} catch (error) {
+			console.error('Error fetching data:', error);
+		}
+	};
+
+	useEffect(() => {
+
+		fetchData();
+	}, []);
+
+	const memoizedStudents = useMemo(() => students, [students]);
+
+	const handleEdit = async (student) => {
+		// Add your logic to handle editing a student record
+		console.log('Editing student:', student);
+		try {
+			const response = await fetch(`http://localhost:8000/api/student/${student.pk}`,
+				{
+					method: 'PUT',
+					body: {
+						'name': student.name,
+						'birthdate': student.birthdate,
+						'score': student.score,
+						'grade': student.grade,
+					},
+				})
+			if (!response.ok) {
+				throw new Error('Failed to edit student');
+			} else {
+				fetchData();
+			}
+		} catch (error) {
+			console.error('Error editing student', error)
+		}
+	};
+
+	const handleDelete = async (studentId) => {
+		try {
+			const response = await fetch(`http://localhost:8000/api/student/${studentId}`, {
+				method: 'DELETE',
+			});
+			if (!response.ok) {
+				throw new Error('Failed to delete student');
+			} else {
+				fetchData();
+			}
+			// Update the local students state after successful deletion
+			// setStudents(students.filter(student => student.id !== studentId));
+		} catch (error) {
+			console.error('Error deleting student:', error);
+		}
+	};
+
+	return (
+		<div className="App">
+			<h1>Student Data App</h1>
+			<main>
+				<StudentTable students={memoizedStudents} onEdit={handleEdit} onDelete={handleDelete}/>
+				<UploadForm />
+			</main>
+		</div>
+	);
 }
 
 export default App;

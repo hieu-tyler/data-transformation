@@ -4,38 +4,15 @@ from rest_framework import status
 
 from .models import Student
 from .serializers import *
+from django.http import JsonResponse
+import csv
+from datetime import datetime
 
-# Create your views here.
-# def upload_file(request):
-#     if request.method == 'POST':
-#         form = UploadFileForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             file = request.FILES['file']
-#             if file.name.endswith('.csv'):
-#                 df = pd.read_csv(file)
-#             elif file.name.endswith('.xlsx'):
-#                 df = pd.read_excel(file)
-#             else:
-#                 # Handle unsupported file types
-#                 pass
-            
-#             # Convert DataFrame to list of dictionaries
-#             data = df.to_dict('records')
-            
-#             # Extract headers from the DataFrame
-#             headers = df.columns.tolist()
-            
-#             return render(request, 'your_template.html', {'headers': headers, 'data': data})
-#     else:
-#         form = UploadFileForm()
-    
-#     return render(request, 'upload_file.html', {'form': form})
 
 @api_view(['GET', 'POST'])
 def students_list(request):
     if request.method == 'GET':
         data = Student.objects.all()
-
         serializer = StudentSerializer(data, context={'request': request}, many=True)
 
         return Response(serializer.data)
@@ -66,3 +43,34 @@ def students_detail(request, pk):
     elif request.method == 'DELETE':
         student.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+# views.py
+@api_view(['POST'])
+def upload_csv(request):
+    if request.method == 'POST' and request.FILES['file']:
+        csv_file = request.FILES['file']
+        decoded_file = csv_file.read().decode('utf-8').splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        try:
+            for row in reader:
+                # Convert birthdate to a datetime object
+                birthdate = datetime.strptime(row['birthdate'], '%d/%m/%Y').date()
+
+                # Convert empty string to None for score field
+                score = int(row['score']) if row['score'].strip() else 0
+
+                Student.objects.create(
+                    name=row['name'],
+                    birthdate=birthdate,
+                    score=score,
+                    grade=row['grade']
+                )
+
+            return JsonResponse({'message': 'CSV data imported successfully'}, status=200)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'No file provided'}, status=400)
+
+

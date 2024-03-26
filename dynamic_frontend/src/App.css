@@ -36,3 +36,21 @@
     transform: rotate(360deg);
   }
 }
+
+/* Add this CSS to your styles.css or StudentTable.css */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+th, td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #f2f2f2;
+}

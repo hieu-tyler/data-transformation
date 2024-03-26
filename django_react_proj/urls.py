@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'^api/student/$', views.students_list),
     re_path(r'^api/student/([0-9])$', views.students_detail),
+    path('api/upload/', views.upload_csv, name='upload_csv'),
 ]
