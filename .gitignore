@@ -1,0 +1,4 @@
+rhombus_env/*
+**/__pycache__/*
+
+dynamic_frontend/node_modules/*
