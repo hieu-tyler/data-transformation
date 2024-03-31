@@ -2,16 +2,37 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from django.http import JsonResponse
-from django.apps import apps
-from django.db import models
 import csv
 import pandas as pd
 from datetime import datetime
-from dateutil import parser
 import re
 
 from .models import Student
 from .serializers import *
+
+DATE_FORMATS = [
+        '%Y-%m-%d',     # Year-Month-Day (ISO 8601)
+        '%m/%d/%Y',     # Month/Day/Year
+        '%Y%m%d',       # YearMonthDay
+        '%m-%d-%Y',     # Month-Day-Year
+        '%d-%m-%Y',     # Day-Month-Year
+        '%d/%m/%Y',     # Day/Month/Year
+        '%Y/%m/%d',     # Year/Month/Day
+        '%d-%b-%Y',     # Day-MonthAbbreviation-Year (e.g., 01-Jan-2022)
+        '%d %b %Y',     # Day MonthAbbreviation Year (e.g., 01 Jan 2022)
+        '%b %d, %Y',    # MonthAbbreviation Day, Year (e.g., Jan 01, 2022)
+        '%B %d, %Y',    # Month Day, Year (e.g., January 01, 2022)
+        '%d %B %Y',     # Day Month Year (e.g., 01 January 2022)
+        '%Y-%m-%d %H:%M:%S',  # Year-Month-Day Hour:Minute:Second (ISO 8601)
+        '%m/%d/%Y %H:%M:%S',  # Month/Day/Year Hour:Minute:Second
+        '%Y%m%d %H:%M:%S',    # YearMonthDay Hour:Minute:Second
+        '%m-%d-%Y %H:%M:%S',  # Month-Day-Year Hour:Minute:Second
+        '%d-%m-%Y %H:%M:%S',  # Day-Month-Year Hour:Minute:Second
+        '%d/%m/%Y %H:%M:%S',  # Day/Month/Year Hour:Minute:Second
+        '%Y/%m/%d %H:%M:%S',  # Year/Month/Day Hour:Minute:Second
+        '%m/%d/%y'       # Month/Day/Year (2-digit year)
+    ]
+
 
 @api_view(['GET', 'POST'])
 def students_list(request):
@@ -55,57 +76,31 @@ def upload_csv(request):
         file = request.FILES['file']
         decoded_file = file.read().decode('utf-8').splitlines()
         reader = csv.DictReader(decoded_file)
-        file = pd.read_csv()
+        df = pd.DataFrame(reader)
+        print(df)
         try:
-            # for row in reader:                
-            #     # Convert birthdate to a datetime object
-            #     birthdate = datetime.strptime(row['birthdate'], '%d/%m/%Y').date()
-
-            #     # Convert empty string to None for score field
-            #     score = int(row['score']) if row['score'].strip() else 0
-
-            #     Student.objects.create(
-            #         name=row['name'],
-            #         birthdate=birthdate,
-            #         score=score,
-            #         grade=row['grade']
-            #     )
-            if file.name.endswith('.csv'):
-                df = pd.read_csv(file, nrows=10)
-            elif file.name.endswith('.xls') or file.name.endswith('.xlsx'):
-                df = pd.read_excel(file, nrows=10)
-            else:
-                raise ValueError('Unsupported file format')
-
-            # Get the table name from the file
-            table_name = file.name.split('.')[0].replace(' ', '_').lower()
-            table_name = table_name.capitalize().replace('_', ' ')
-            
-            if apps.all_models['dynamic_data'].get(table_name):
-                model = apps.all_models['your_app_name'][table_name]
-                existing_fields = [field.name for field in model._meta.get_fields()]
-
-                for column in df.columns:
-                    field_type = check_type(df[column].iloc[0])  # Check data type of first row
-                    if column not in existing_fields:
-                        field = getattr(models, field_type)(null=True, blank=True)
-                        model.add_to_class(column, field)
-
-                model.save()
-            else:
-                fields = {
-                    column: getattr(models, check_type(df[column].iloc[0]))(null=True, blank=True)
-                    for column in df.columns
-                }
-                new_model = type(table_name, (models.Model,), fields)
-                new_model._meta.db_table = table_name.lower().replace(' ', '_')
-                new_model.save()
+            data = handle_data(df)
+            print(data)
+            for index, row in data.iterrows():                
+                Student.objects.create(
+                    name=row['name'],
+                    birthdate=row['birthdate'],
+                    score=row['score'],
+                    grade=row['grade']
+                )
 
             return JsonResponse({'message': 'CSV data imported successfully'}, status=200)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
     return JsonResponse({'error': 'No file provided'}, status=400)
+
+
+def handle_data(df):
+    for column in df.columns:
+        most_common_datatype = get_datatype(df[column])
+        convert_to_correct_datatype(df, column, most_common_datatype)
+    return df
 
 def is_valid_date(date_str):
     """lambda function for checking date validation
@@ -116,21 +111,58 @@ def is_valid_date(date_str):
     Returns:
         Bool: is_valid_date
     """
-    try:
-        parsed_date = parser.parse(date_str)
-        return True if parsed_date else False
-    except (ValueError, OverflowError):
-        return False
+    for date_format in DATE_FORMATS:
+        try:
+            datetime.strptime(date_str, date_format)
+            return True
+        except ValueError:
+            continue
+    return False
 
 def check_type(obj):
     """Check the type of the input object."""
     if is_valid_date(obj):
-        return 'DateField'
+        return 'date'
     elif re.match(r'^-?\d+$', obj):
-        return 'IntegerField'
+        return 'int'
     elif re.match(r'^-?\d+\.\d+$', obj):
-        return 'FloatField'
+        return 'float64'
     elif obj.lower() in ('true', 'false'):
-        return 'BooleanField'
+        return 'bool'
     else:
-        return 'CharField'
+        return 'object'
+    
+def convert_to_correct_datatype(df, column, datatype):
+    if datatype == 'category':
+        df[column] = df[column].astype('category')
+    elif datatype == 'date':
+        df[column] = pd.to_datetime(df[column], errors='coerce')
+    elif datatype == 'int':
+        df[column] = pd.to_numeric(df[column], errors='coerce').astype('Int64').fillna(0)
+    elif datatype == 'float64':
+        df[column] = pd.to_numeric(df[column], errors='coerce').fillna(0.0)
+    elif datatype == 'bool':
+        df[column] = df[column].map(lambda x: x.lower() == 'true')
+    elif datatype == 'object':
+        df[column] = df[column].fillna('')
+
+def get_datatype(series):
+    """Get the most common datatype for a pandas Series"""
+    types_count = {
+        'datetime64': 0,
+        'category': 0,
+        'date': 0,
+        'int': 0,
+        'float64': 0,
+        'bool': 0,
+        'object': 0
+    }
+
+    for val in series:
+        if val.strip() == '':
+            types_count['object'] += 1
+        else:
+            data_type = check_type(val)
+            types_count[data_type] += 1
+
+    return max(types_count, key=types_count.get)
