@@ -100,7 +100,7 @@ def upload_csv(request):
                 Student.objects.create(
                     name=row.get("Name") or "",
                     birthdate=row.get("Birthdate") or None,
-                    score=row.get("Score") if isinstance(row.get("Score"), int) else 0,
+                    score=row.get("Score") or 0,
                     grade=row.get("Grade") or "",
                     isGraduate=row.get("IsGraduate") or False,
                 )

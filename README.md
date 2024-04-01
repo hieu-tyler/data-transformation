@@ -34,9 +34,8 @@ Describe your project
 
 ## :sparkles: Features ##
 
-:heavy_check_mark: Feature 1;\
-:heavy_check_mark: Feature 2;\
-:heavy_check_mark: Feature 3;
+:heavy_check_mark: Upload CSV;\
+:heavy_check_mark: Auto format data;
 
 ## :rocket: Technologies ##
 
@@ -112,7 +111,7 @@ The current file upload supports are CSV, XLSX, and XLS
 This project is under license from MIT. For more details, see the [LICENSE](LICENSE.md) file.
 
 
-Made with :heart: by <a href="https://github.com/hieu-tyler" target="_blank">{{YOUR_NAME}}</a>
+Made with :heart: by <a href="https://github.com/hieu-tyler" target="_blank">Hieu Tyler</a>
 
 &#xa0;
 
