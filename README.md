@@ -8,22 +8,6 @@
 
 <h1 align="center">Data Transformation</h1>
 
-<p align="center">
-  <img alt="Github top language" src="https://img.shields.io/github/languages/top/{{YOUR_GITHUB_USERNAME}}/data-transformation?color=56BEB8">
-
-  <img alt="Github language count" src="https://img.shields.io/github/languages/count/{{YOUR_GITHUB_USERNAME}}/data-transformation?color=56BEB8">
-
-  <img alt="Repository size" src="https://img.shields.io/github/repo-size/{{YOUR_GITHUB_USERNAME}}/data-transformation?color=56BEB8">
-
-  <img alt="License" src="https://img.shields.io/github/license/{{YOUR_GITHUB_USERNAME}}/data-transformation?color=56BEB8">
-
-  <!-- <img alt="Github issues" src="https://img.shields.io/github/issues/{{YOUR_GITHUB_USERNAME}}/data-transformation?color=56BEB8" /> -->
-
-  <!-- <img alt="Github forks" src="https://img.shields.io/github/forks/{{YOUR_GITHUB_USERNAME}}/data-transformation?color=56BEB8" /> -->
-
-  <!-- <img alt="Github stars" src="https://img.shields.io/github/stars/{{YOUR_GITHUB_USERNAME}}/data-transformation?color=56BEB8" /> -->
-</p>
-
 <!-- Status -->
 
 <!-- <h4 align="center"> 
@@ -58,11 +42,11 @@ Describe your project
 
 The following tools were used in this project:
 
-- [Expo](https://expo.io/)
 - [Node.js](https://nodejs.org/en/)
 - [React](https://pt-br.reactjs.org/)
-- [React Native](https://reactnative.dev/)
-- [TypeScript](https://www.typescriptlang.org/)
+- [React Hook](https://react.dev/reference/react/hooks)
+- [Python](https://www.python.org/)
+- [Django](https://www.djangoproject.com/)
 
 ## :white_check_mark: Requirements ##
 
@@ -72,26 +56,63 @@ Before starting :checkered_flag:, you need to have [Git](https://git-scm.com) an
 
 ```bash
 # Clone this project
-$ git clone https://github.com/{{YOUR_GITHUB_USERNAME}}/data-transformation
+$ git clone https://github.com/hieu-tyler/data-transformation
 
 # Access
 $ cd data-transformation
 
+# Create env
+python -m venv transform_env
+
+# Activate env
+source ./transform_env/bin/activate
+
+# Note: Your terminal/command prompt should have (transform_env) username@localhost: 
+
 # Install dependencies
-$ yarn
+$ pip install requirements.txt
+$ pip3 install requirements.txt
 
 # Run the project
-$ yarn start
+$ python manage.py runserver
 
-# The server will initialize in the <http://localhost:3000>
+# The server will initialize in the <http://localhost:8000>
+# Go to your web browswer and run <http://localhost:8000/api/student>
+
 ```
+
+## Note
+To show the content of the backend, you should check for URL endpoints, lik
+localhost:8000/api/student : Method GET, POST
+localhost:8000/api/student/*number_id* : Method PUT, DELETE
+
+
+Next, is the frontend, I use simple React project to show up the case
+
+```bash
+
+# Go to frontend
+$ cd dynamic_frontend/
+
+# Install packages
+$ npm install
+
+# Run the application
+$ npm start
+
+# The frontend will initialize in the <http://localhost:3000>
+```
+
+## Start uploading
+The current file upload supports are CSV, XLSX, and XLS
+
 
 ## :memo: License ##
 
 This project is under license from MIT. For more details, see the [LICENSE](LICENSE.md) file.
 
 
-Made with :heart: by <a href="https://github.com/{{YOUR_GITHUB_USERNAME}}" target="_blank">{{YOUR_NAME}}</a>
+Made with :heart: by <a href="https://github.com/hieu-tyler" target="_blank">{{YOUR_NAME}}</a>
 
 &#xa0;
 
