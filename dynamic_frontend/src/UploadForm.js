@@ -35,8 +35,8 @@ const UploadForm = ({onUploadSuccess}) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <input type="file" accept=".csv" onChange={handleFileChange} />
-      <button type="submit">Upload CSV</button>
+      <input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileChange} />
+      <button type="submit">Upload</button>
     </form>
   );
 };
