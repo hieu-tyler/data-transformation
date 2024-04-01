@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-const UploadForm = () => {
+const UploadForm = ({onUploadSuccess}) => {
   const [file, setFile] = useState(null);
 
   const handleFileChange = (e) => {
@@ -22,6 +22,7 @@ const UploadForm = () => {
 
       if (response.ok) {
         alert('File uploaded successfully!');
+        onUploadSuccess();
       } else {
         const data = await response.json();
         alert('Failed to upload file: ' + data.error);

@@ -61,19 +61,22 @@ function App() {
 			} else {
 				fetchData();
 			}
-			// Update the local students state after successful deletion
-			// setStudents(students.filter(student => student.id !== studentId));
+
 		} catch (error) {
 			console.error('Error deleting student:', error);
 		}
 	};
+
+	const handleUploadSuccess = async () => {
+		fetchData(); 
+	  };
 
 	return (
 		<div className="App">
 			<h1>Student Data App</h1>
 			<main>
 				<StudentTable students={memoizedStudents} onEdit={handleEdit} onDelete={handleDelete}/>
-				<UploadForm />
+				<UploadForm onUploadSuccess={handleUploadSuccess}/>
 			</main>
 		</div>
 	);
